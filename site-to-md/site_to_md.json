@@ -1,0 +1,470 @@
+{
+  "name": "Jina.ai抓取网页",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Jina.ai Web Scraper\n### No API Key Required\n",
+        "height": 320,
+        "width": 340,
+        "color": 3
+      },
+      "id": "386d6c17-1aab-44e7-807c-221daf7a9493",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -620,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "8914331a-0914-491a-b668-f3b6bac20a3a",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -1280,
+        280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f23640cd-227e-4a48-a1b4-92821dade1f2",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -860,
+        600
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {},
+      "id": "f6a208f1-98e2-4023-bc65-1b01bb66821b",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        260,
+        820
+      ],
+      "webhookId": "081ce124-0cbf-4a21-a1e7-2c465f460448",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "maxItems": 20
+      },
+      "id": "8e890a4d-ac1a-48e6-ab38-b565c3cdc2dc",
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "position": [
+        300,
+        280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.sitemap_url }}",
+        "options": {}
+      },
+      "id": "814a1d1e-8869-46b1-8ab4-7597c6ce9bcf",
+      "name": "Get List of Website URLs",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -560,
+        280
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "bf56609f-c83e-4f58-9581-83bd702ef386",
+      "name": "Convert to JSON",
+      "type": "n8n-nodes-base.xml",
+      "position": [
+        -340,
+        280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "urlset.url",
+        "options": {}
+      },
+      "id": "317159f4-6d61-424d-9f2a-61e36d90d166",
+      "name": "Create List of Website URLs",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        -120,
+        280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "d66c304d-879a-4dc4-908f-ab0665093672",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.loc }}",
+              "rightValue": "=https://ai.pydantic.dev/"
+            },
+            {
+              "id": "3c930950-bee4-442b-82e6-4437fd39a933",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.loc.toLowerCase() }}",
+              "rightValue": "agent"
+            },
+            {
+              "id": "aaeaf34e-ad5a-4673-b3bd-8bddf3500988",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.loc.toLowerCase() }}",
+              "rightValue": "tool"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1d178c22-6247-4ebe-8d5a-9b4ebb4fb1d9",
+      "name": "Filter By Topics or Pages",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        100,
+        280
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1601dc3e-8024-4e19-b592-93a4e4f77641",
+              "name": "sitemap_url",
+              "type": "string",
+              "value": "https://ai.pydantic.dev/sitemap.xml"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7e4eb620-934b-4a1c-924d-1a8e40b946ec",
+      "name": "Set Website URL",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -860,
+        280
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "url": "=https://r.jina.ai/{{ $json.loc }}",
+        "options": {}
+      },
+      "id": "3e2c871a-8174-41a3-b654-3489ded4274d",
+      "name": "Jina.ai Web Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -500,
+        700
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json.markdown }}",
+        "name": "={{ $('Loop Over Items').item.json.loc }} - {{ $json.title }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "21d9a0b3-e02b-44d0-be39-2e1cc226350a",
+      "name": "Save Webpage Contents to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        0,
+        20
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the text output from the previous node\nconst data = $input.first().json.data;\n\n// Regular expression to capture the title line\nconst titleRegex = /^Title:\\s*(.+)$/m;\n// Regular expression to capture everything after \"Markdown Content:\"\nconst markdownRegex = /Markdown Content:\\n([\\s\\S]+)/;\n\n// Extract the title using the first capture group\nconst titleMatch = data.match(titleRegex);\nconst title = titleMatch ? titleMatch[1].trim() : '';\n\n// Extract the markdown content using the first capture group\nconst markdownMatch = data.match(markdownRegex);\nconst markdown = markdownMatch ? markdownMatch[1].trim() : '';\n\n// Return a single object with title and markdown as unique values\nreturn { title, markdown };"
+      },
+      "id": "350119b0-33f2-49b8-b38d-f4ff0e0b5b83",
+      "name": "Extract Title & Markdown Content",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -160,
+        700
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "# 💡🌐 Essential Multipage Website Scraper with Jina.ai\n## Scrape entire websites with this workflow\n**Use responsibly and follow local rules and regulations**",
+        "height": 1080,
+        "width": 1540,
+        "color": 7
+      },
+      "id": "5a8f42fb-f5ed-4688-bf55-c9d96a98f39b",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1020,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 👍Try Me!",
+        "height": 300,
+        "width": 280,
+        "color": 4
+      },
+      "id": "ec782361-b516-4a5a-a158-6d0b6b160df1",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1360,
+        180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 👇Add Website Sitemap URL",
+        "height": 300,
+        "width": 300
+      },
+      "id": "7b1f324c-fbc7-4170-b1f6-fcc3b7ef0912",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -960,
+        180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "markdown",
+        "options": {
+          "fileName": "={{ $json.title }}-{{ $('Loop Over Items').item.json.lastmod }}.md"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        120,
+        560
+      ],
+      "id": "be010350-72ce-4d40-a438-6e6113a64c3a",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/home/node/{{ $('Extract Title & Markdown Content').item.json.title }}.md",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        340,
+        580
+      ],
+      "id": "0948cfad-0b36-4cc0-968f-69f0052f67fc",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to JSON": {
+      "main": [
+        [
+          {
+            "node": "Create List of Website URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Jina.ai Web Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Website URL": {
+      "main": [
+        [
+          {
+            "node": "Get List of Website URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jina.ai Web Scraper": {
+      "main": [
+        [
+          {
+            "node": "Extract Title & Markdown Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get List of Website URLs": {
+      "main": [
+        [
+          {
+            "node": "Convert to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter By Topics or Pages": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create List of Website URLs": {
+      "main": [
+        [
+          {
+            "node": "Filter By Topics or Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Title & Markdown Content": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Website URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Webpage Contents to Google Drive": {
+      "main": [
+        []
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bcdf50f7-56a0-462b-9ef9-bbc87cbfea65",
+  "meta": {
+    "instanceId": "496c703b7f7fd7fc512cfae4e53cdbe36c077bba7b5712424b2e18b6557bc792"
+  },
+  "id": "wdwLDfB8iPYskAvk",
+  "tags": []
+}
