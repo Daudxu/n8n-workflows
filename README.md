@@ -7,3 +7,4 @@
 ## 目录
 
 - [site-to-md：网站内容批量抓取与转 Markdown 工作流](site-to-md/README.md)
+- [chatbot：LLM聊天工作流](chatbot/README.md)
