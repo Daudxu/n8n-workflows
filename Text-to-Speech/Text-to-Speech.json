@@ -1,0 +1,258 @@
+{
+  "name": "text-to-tts",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "book",
+        "formDescription": "upload a book",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "book",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".txt,,pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -40
+      ],
+      "id": "3646086b-846f-4307-9730-a4ef05768290",
+      "name": "On form submission",
+      "webhookId": "b77c6cba-4f19-4429-a120-d669b2cb85e6"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "embeddingBatchSize": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        -40
+      ],
+      "id": "b02a8223-b54e-41b6-891f-781b98c99e98",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        500,
+        260
+      ],
+      "id": "78327131-a90b-4a2b-a748-74476b50dc29",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        500,
+        440
+      ],
+      "id": "241c09ff-c4f7-4f70-bff6-ef5e1915590b",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "maxItems": 2
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -40
+      ],
+      "id": "55fd55d0-0759-4555-89be-d0f3e9369f38",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1100,
+        -40
+      ],
+      "id": "9544710c-af1c-498a-8755-2cc86c8f5c57",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "command": "=python /home/node/.n8n/f5_tts.py --text \"{{$json.pageContent }}\" --ref \"/home/node/.n8n/haimianbaobao.wav\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        -20
+      ],
+      "id": "9289d588-6c73-42b1-947e-4b3802539012",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1460,
+        200
+      ],
+      "id": "db7dcb72-9f6e-44b3-9b23-6809776ae3a7",
+      "name": "Wait",
+      "webhookId": "17e5ae25-16d4-4991-98b5-fdefcdfa7057"
+    },
+    {
+      "parameters": {
+        "model": "bge-m3:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        360,
+        240
+      ],
+      "id": "bca62a60-35d6-4099-b4de-b02afaa4715e",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QJUfzAqNYFOOLzIu",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "afbb78e1-a846-4dd1-ad69-1328856217fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "94f3214a0e4559d0e3430846a145356058cc7a8095a7a3867bf0cbf2f5479de4"
+  },
+  "id": "QP6AI2FjGVMDcSep",
+  "tags": []
+}
